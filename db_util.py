@@ -55,6 +55,12 @@ def insertNickname(session, login_info):
             """
         )
         status2 = session.execute(st2, (user_id, 0, 0, 0))
+        st3 = session.prepare(
+            """
+            INSERT INTO ids (nickname, user_id) VALUES (?, ?)
+            """
+        )
+        status3 = session.execute(st3, (login_info['nickname'], user_id))
     except Exception as e:
         print(e)
         return 1
@@ -66,9 +72,9 @@ def updateScore(session, addedScore, user_id, scoreType):
         st = session.prepare(
             "SELECT " + scoreType + ", totalScore FROM Leaderboard WHERE user_id = ?"
         )
-        scores = int(session.execute(st, (user_id)))
-        score0 = scores[0] + addedScore
-        totScore = scores[1] + addedScore
+        scores = session.execute(st, (user_id,))
+        score0 = scores.one()[0] + addedScore
+        totScore = scores.one()[1] + addedScore
     except Exception as e:
         print(e)
         return 1
@@ -101,12 +107,12 @@ def getUseridFromNickname(session, nickname):
     try:
         st = session.prepare(
             """
-            SELECT user_id FROM Nicknames WHERE nickname = ?
+            SELECT user_id FROM ids WHERE nickname = ?
             """
         )
-        user_id = session.execute(st, (nickname))
+        user_id = session.execute(st, (nickname,))
     except Exception as e:
         print(e)
         return 1
     
-    return user_id
+    return user_id.one()[0]
