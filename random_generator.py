@@ -1,18 +1,7 @@
 import requests
 from random import randint
 
-firstName = 'Chirag'
-lastName = 'Sardana'
-
-DOB = '02-04-1998'
-
-userName = ''
-
-[month, year, day] = DOB.split('-')
-
-
-def generate():
-    global userName
+def generate(firstname, lastname, dob):
     URL = 'https://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text%2Fplain'
     names = requests.get(URL,headers={'User-Agent': 'Custom'})
 
@@ -24,23 +13,16 @@ def generate():
     fuser = namesSeperated[randomInt]
     num = str(randomInt)
     userName = fuser + num[:2]
+    validate(firstname, lastname, dob, userName)
 
 
-def validate():
-    global firstName
-    global lastName
-    global month
-    global year
-    global day
+def validate(firstname, lastname, dob, userName):
+    [month, year, day] = dob.split('-')
 
-    if firstName in userName:
-        generate()
-    if lastName in userName:
-        generate()
+    if firstname in userName:
+        generate(firstname, lastname, dob)
+    if lastname in userName:
+        generate(firstname, lastname, dob)
     if month or day or year in userName:
-        generate()
+        generate(firstname, lastname, dob)
 
-
-generate()
-validate()
-//print(userName)
