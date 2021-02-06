@@ -39,8 +39,9 @@ def validate():
         generate()
     if month or day or year in userName:
         generate()
+    return userName
 
+if (__name__ == 'main'):
+    generate()
+    validate()
 
-generate()
-validate()
-//print(userName)
