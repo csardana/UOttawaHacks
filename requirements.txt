@@ -1,3 +1,4 @@
 cassandra-driver
 requests
 random
+flask

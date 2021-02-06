@@ -2,7 +2,10 @@ from cassandra.cluster import Cluster, ExecutionProfile, EXEC_PROFILE_DEFAULT
 from cassandra.policies import WhiteListRoundRobinPolicy, DowngradingConsistencyRetryPolicy
 from cassandra.query import tuple_factory
 from cassandra.auth import PlainTextAuthProvider
+from cassandra.cqlengine import columns
+from cassandra.cqlengine.models import Model
 import uuid
+
 
 def createSession():
     cloud_config= {
@@ -34,15 +37,13 @@ def executePreparedStatement(session, prepSt, params):
     return 0
 
 def insertNickname(session, login_info):
-    user_id = uuid.uuid1()
     try:
         st = session.prepare(
             """
-            INSERT INTO Nicknames (user_id, dob, firstname, lastname, nickname) VALUES (?, ?, ?, ?, ?)
+            INSERT INTO Nicknames (dob, firstname, lastname, nickname) VALUES (?, ?, ?, ?)
             """
         )
         status = session.execute(st, (
-                user_id, 
                 login_info['dob'], 
                 login_info['firstname'], 
                 login_info['lastname'], 
@@ -51,28 +52,23 @@ def insertNickname(session, login_info):
         )
         st2 = session.prepare(
             """
-            INSERT INTO Leaderboard (user_id, guessscore, hintscore, totalscore) VALUES (?, ?, ?, ?)
+            INSERT INTO Leaderboard (nickname, guessscore, hintscore, totalscore) VALUES (?, ?, ?, ?)
             """
         )
-        status2 = session.execute(st2, (user_id, 0, 0, 0))
-        st3 = session.prepare(
-            """
-            INSERT INTO ids (nickname, user_id) VALUES (?, ?)
-            """
-        )
-        status3 = session.execute(st3, (login_info['nickname'], user_id))
+        status2 = session.execute(st2, (login_info['nickname'], 0, 0, 0))
+        
     except Exception as e:
         print(e)
         return 1
     
     return 0
 
-def updateScore(session, addedScore, user_id, scoreType):
+def updateScore(session, addedScore, nickname, scoreType):
     try:
         st = session.prepare(
-            "SELECT " + scoreType + ", totalScore FROM Leaderboard WHERE user_id = ?"
+            "SELECT " + scoreType + ", totalScore FROM Leaderboard WHERE nickname = ?"
         )
-        scores = session.execute(st, (user_id,))
+        scores = session.execute(st, (nickname,))
         score0 = scores.one()[0] + addedScore
         totScore = scores.one()[1] + addedScore
     except Exception as e:
@@ -80,9 +76,9 @@ def updateScore(session, addedScore, user_id, scoreType):
         return 1
 
     try:
-        statement = "UPDATE Leaderboard SET " + scoreType + " = ?, totalScore = ? WHERE user_id = ?"
+        statement = "UPDATE Leaderboard SET " + scoreType + " = ?, totalScore = ? WHERE nickname = ?"
         st = session.prepare(statement)
-        status = session.execute(st, (score0, totScore, user_id))
+        status = session.execute(st, (score0, totScore, nickname))
     except Exception as e:
         print(e)
         return 1
@@ -102,17 +98,3 @@ def resetScores(session):
     
     return 0
 
-def getUseridFromNickname(session, nickname):
-    #should be mainly for testing
-    try:
-        st = session.prepare(
-            """
-            SELECT user_id FROM ids WHERE nickname = ?
-            """
-        )
-        user_id = session.execute(st, (nickname,))
-    except Exception as e:
-        print(e)
-        return 1
-    
-    return user_id.one()[0]

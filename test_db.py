@@ -18,11 +18,8 @@ s2 = db.retrieveLeaderboard(session)
 for row in s2:
     print (row[0], row[1], row[2], row[3])
 print("s3")
-s3 = db.getUseridFromNickname(session, login_info['nickname'])
-print(s3)
+s3 = db.updateScore(session, 40, login_info['nickname'], "guessscore")
 print("s4")
-s4 = db.updateScore(session, 40, s3, "guessscore")
-print("s5")
-s5 = db.retrieveLeaderboard(session)
-for row in s5:
+s4 = db.retrieveLeaderboard(session)
+for row in s4:
     print (row[0], row[1], row[2], row[3])
