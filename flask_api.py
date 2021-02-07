@@ -57,3 +57,7 @@ def resetLeaderboard():
     session = db.createSession()
     status = db.resetScores(session)
     return status
+
+@app.route('/sendMsg', methods=['POST'])
+def sendMsg():
+    pass
