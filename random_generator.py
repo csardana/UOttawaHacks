@@ -41,7 +41,5 @@ def validate():
         generate()
     return userName
 
-if (__name__ == 'main'):
-    generate()
-    validate()
+
 

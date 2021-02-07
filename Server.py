@@ -58,7 +58,8 @@ def clientthread(conn, addr):
                     if client.ip == addr[0]:
                         nick = client.nick_name
                     else:
-                        nick = random_generator
+                        random_generator.generate()
+                        nick = random_generator.validate()
                         clients_list.append(clients(addr[0],nick,random_generator.firstName))
                 # Calls broadcast function to send message to all
 
